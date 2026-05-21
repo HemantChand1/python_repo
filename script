@@ -10,6 +10,16 @@ pipeline {
             }
         }
 
+        stage('Install System Dependencies') {
+            steps {
+                echo '🔧 Installing python3-venv...'
+                sh '''
+                    apt-get update -y
+                    apt-get install -y python3-venv python3-full
+                '''
+            }
+        }
+
         stage('Setup Virtual Environment') {
             steps {
                 echo '🐍 Creating virtual environment...'
