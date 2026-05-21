@@ -1,0 +1,68 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                echo '📥 Pulling code from Git...'
+                checkout scm
+            }
+        }
+
+        stage('Setup Virtual Environment') {
+            steps {
+                echo '🐍 Creating virtual environment...'
+                sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install -r requirements.txt
+                '''
+            }
+        }
+
+        stage('Run Analysis') {
+            steps {
+                echo '🔍 Running Student Study Analysis...'
+                sh '''
+                    . venv/bin/activate
+                    python3 src/analysis.py
+                '''
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo '🧪 Running Unit Tests...'
+                sh '''
+                    . venv/bin/activate
+                    python3 -m unittest discover src
+                '''
+            }
+        }
+
+        stage('Show Results') {
+            steps {
+                echo '📊 Displaying Results...'
+                sh 'cat output/results.txt'
+            }
+        }
+
+        stage('Save Results') {
+            steps {
+                echo '💾 Archiving results file...'
+                archiveArtifacts artifacts: 'output/results.txt',
+                                 fingerprint: true
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Analysis Complete!'
+        }
+        failure {
+            echo '❌ Pipeline Failed — Check logs!'
+        }
+    }
+}
